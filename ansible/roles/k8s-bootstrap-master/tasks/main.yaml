@@ -1,0 +1,118 @@
+---
+- name: 'Add Google official GPG key'
+  apt_key:
+    url: https://packages.cloud.google.com/apt/doc/apt-key.gpg
+    state: present
+
+- name: 'Add Kubernetes Repository'
+  apt_repository:
+    repo: deb http://apt.kubernetes.io/ kubernetes-xenial main 
+    state: present
+    filename: kubernetes
+    mode: 0600
+
+- name: 'Install kubernetes binaries'
+  apt:
+    name: "{{ packages }}"
+    state: present
+    update_cache: yes
+  vars:
+    packages:
+    - kubelet={{ version }}
+    - kubeadm={{ version }}
+    - kubectl={{ version }}
+    - kubernetes-cni
+
+- name: 'Install ansible on master node'
+  apt:
+    name: "{{ packages }}"
+    state: present
+    update_cache: yes
+  vars:
+    packages:
+    - ansible
+
+- name: 'Enable kubelet service'
+  service:
+    name: kubelet
+    enabled: yes
+
+- name: 'Start kubelet service, if not started'
+  service:
+    name: kubelet
+    state: started
+
+- name: 'Initialize k8s master node'
+  shell: kubeadm init --apiserver-advertise-address {{ ansible_eth1.ipv4.address }} --control-plane-endpoint {{ master }}":"{{ master_port }} --pod-network-cidr={{ pod_network }} --upload-certs
+  vars:
+    master: 'mk8s-master'
+    master_port: '6443'
+    pod_network: '10.244.0.0/16'
+
+  retries: 10
+  delay: 30
+  register: tmp_k8s_join_master_cmd
+  until: tmp_k8s_join_master_cmd.stdout.find("Your Kubernetes control-plane has initialized successfully!") != -1
+
+- debug: msg="{{ tmp_k8s_join_master_cmd.stdout }}"
+- debug: msg="{{ tmp_k8s_join_master_cmd.stderr }}"
+
+- name: 'Dump kubernetes initialization master command output to temporary file'
+  local_action: copy content="{{ tmp_k8s_join_master_cmd.stdout }}" dest="/tmp/tmp-join-master.sh" mode=0777
+
+- name: 'Hack Master join command from local file'
+  shell: cat /tmp/tmp-join-master.sh | sed -n '/  kubeadm join/,/--control-plane/p' | sed "s/^[ \t]*//"
+  register: k8s_join_master_cmd
+
+- debug: msg="{{ k8s_join_master_cmd.stdout }}"
+- debug: msg="{{ k8s_join_master_cmd.stderr }}"
+
+- name: 'Create a ansible playbook directory if it does not exist'
+  file:
+    path: $HOME/ansible
+    state: directory
+    owner: root
+    group: root
+    mode: '0700'
+
+- name: 'Copy ansible things'
+  copy: src={{ item.src }} dest={{ item.dest }}
+  with_items:
+    - { src: ../../../inventory/hosts, dest: $HOME/ansible/hosts }
+    - { src: ../../../conf/ansible.cfg, dest: $HOME/ansible/ansible.cfg }
+
+- name: 'Copy Master join command to local file'
+  local_action: copy content="{{ k8s_join_master_cmd.stdout }}" dest="$HOME/ansible/join-master.sh" mode=0777
+
+- name: 'Create a directory .kube if it does not exist'
+  file:
+    path: $HOME/.kube
+    state: directory
+    owner: root
+    group: root
+    mode: '0750'
+
+- name: 'Copy kubernetes configuration for root user'
+  copy:
+    src: /etc/kubernetes/admin.conf
+    dest: $HOME/.kube/config
+    owner: root
+    group: root
+    mode: '0600'
+    remote_src: yes
+
+- name: 'Implement weavenet network for pods'
+  shell: kubectl apply -f "https://cloud.weave.works/k8s/net?k8s-version=$(kubectl version | base64 | tr -d '\n')"
+  register: status
+
+- debug: msg="{{ status.stdout }}"
+- debug: msg="{{ status.stderr }}"
+
+- name: 'Generate join command for workers'
+  shell: kubeadm token create --print-join-command
+  register: k8s_join_worker_cmd
+- debug:
+    msg: "{{ k8s_join_worker_cmd.stdout }}"
+
+- name: 'Copy Worker join command to local file'
+  local_action: copy content="{{ k8s_join_worker_cmd.stdout_lines[0] }}" dest="$HOME/ansible/join-worker.sh" mode=0777

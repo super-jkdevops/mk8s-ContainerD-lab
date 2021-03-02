@@ -1,0 +1,8 @@
+---
+- hosts: all
+  become: true
+  gather_facts: no
+  tasks:
+    - name: 'Kubernetes prepare hosts entries'
+      import_role:
+        name: k8s-hosts

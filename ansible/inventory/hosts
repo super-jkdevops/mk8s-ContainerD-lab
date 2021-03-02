@@ -1,0 +1,9 @@
+[all:vars]
+ansible_user = root
+
+[MASTER]
+mk8s-master
+
+[NODES]
+mk8s-worker1
+mk8s-worker2
