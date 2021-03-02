@@ -41,42 +41,13 @@ Here will be short list about all requirements needed to run this environment.
   * VirtualBox 6.1 or higher (https://www.virtualbox.org/wiki/Downloads)
 
 ## Before you start
-There are some prerequisite task which need to be completed before you start.
+There are some prerequisite task which need to be completed before you start for example:
+installing virtualbox, vagrant or if you are on Windows WSL1/2 or CygWin. I assume that you have
+already installed and prepared everything to run. You don't need to install ansible cause I am
+using embaded ansible provisioner.
 
-### Installing VirtualBox
-From your laptop/desktop if you have 
-
-CentOS 7.X/RHEL 7.X, CentOS 8.X/RHEL 8.X or Windows go through documentation. This topic goes beyound scope of this article!
-
-Windows: https://download.virtualbox.org/virtualbox/6.1.16/VirtualBox-6.1.16-140961-Win.exe
-<br/>
-Linux distributions: https://www.virtualbox.org/wiki/Linux_Downloads
-
-### Windows
-Please install WSL when you spin up lab on Windows machine. I recommend you to use 
-Ubuntu 20.04 LTS. Be carefull and select proper WSL version! It should be always 
-WSL 1 cause  WSL 2 is error prone! I would say more experimental. I faced cam across 
-many troubles when I used WSL2 such as network connectivity issues related to ssh etc. 
-Please put cloned repository out of /mnt/c and /mnt/d Windows directories. Why because 
-Windows has own permission assignments! I advise to use Linux /home subsystem directory
-otherwise you will be not able to use chmod commands.  
-
-When you currently have WSL2 you need to convert it to WSL1.
-
-List runs WSL distribution onboarded on your Windows Machine (please use powershell as Administrator)
-```
-wsl --list --verbose
-```
-
-Converting from WSL2 to WSL1
-```
-wsl --set-version <YOUR DISTRIBUTION> 1
-```
-
-
-`<YOUR DISTRIBUTION>`: is just output grabbed from previous command listing for example: Ubuntu-20.04
-
-I highly encurage you to use Ubuntu 20.04 LTS!
+I highly encurage you to use Ubuntu 18.0.4 or 20.04 LTS! It does not matter if ud is a direct installation
+or not.
 
 ## Items
 
@@ -102,17 +73,14 @@ Kubernetes v1.19.3
 
 + containerD
 ```
-
+containerd github.com/containerd/containerd 1.3.3-0ubuntu1~18.04.4
 ```
 
 + Operating system version
 ```
 Ubuntu 18.04 LTS - Kubernetes control plane and compute nodes
 ```
-+ Vagrant version
-```
-Vagrant 2.2.9
-```
+
 
 ## Clone repo
 How to clone repo? I'm sending you to documentation: https://confluence.atlassian.com/bitbucket/clone-a-repository-223217891.html
@@ -158,7 +126,7 @@ You should see similar output:
 
 It can take a while, up to 20 mins. Please be patient.
 
-### Smoke test from 1st master node:
+### Smoke test from master node:
 
 
 vagrant ssh mk8s-master1
@@ -215,7 +183,10 @@ kubectl get nodes -o wide
 
 Then following output should be displayed:
 ```
-
+NAME           STATUS   ROLES    AGE     VERSION   INTERNAL-IP   EXTERNAL-IP   OS-IMAGE             KERNEL-VERSION       CONTAINER-RUNTIME
+mk8s-master    Ready    master   7m16s   v1.19.3   172.18.0.2    <none>        Ubuntu 18.04.5 LTS   4.15.0-128-generic   containerd://1.3.3
+mk8s-worker1   Ready    <none>   2m3s    v1.19.3   172.18.0.10   <none>        Ubuntu 18.04.5 LTS   4.15.0-128-generic   containerd://1.3.3
+mk8s-worker2   Ready    <none>   0m35s   v1.19.3   172.18.0.11   <none>        Ubuntu 18.04.5 LTS   4.15.0-128-generic   containerd://1.3.3
 ```
 
 Please remember that you should see all nodes and masters as ready. If for some reason
@@ -245,24 +216,37 @@ kube-system       Active   45m
 
 Pods in kube-system namespace:
 ```
-kubectl --namespace kube-system get pods
+kubectl -n kube-system get pods
 ```
 
 You should see following output:
 
 ```
-
+NAME                                  READY   STATUS    RESTARTS   AGE
+coredns-f9fd979d6-7r7sc               1/1     Running   0          13m
+coredns-f9fd979d6-hljv5               1/1     Running   0          13m
+etcd-mk8s-master                      1/1     Running   0          14m
+kube-apiserver-mk8s-master            1/1     Running   0          14m
+kube-controller-manager-mk8s-master   1/1     Running   0          14m
+kube-proxy-c6p45                      1/1     Running   0          3m49s
+kube-proxy-kc892                      1/1     Running   0          9m4s
+kube-proxy-xv2vr                      1/1     Running   0          13m
+kube-scheduler-mk8s-master            1/1     Running   0          14m
+weave-net-5phk2                       2/2     Running   1          9m4s
+weave-net-b4sd5                       2/2     Running   1          13m
+weave-net-p7wjh                       2/2     Running   1          3m49s
 ```
 
 Deployments in kube-system namespace:
 ```
-kubectl --namespace kube-system get deployments
+kubectl -n kube-system get deployments
 ```
 
 Desired output:
 
 ```
-
+NAME      READY   UP-TO-DATE   AVAILABLE   AGE
+coredns   2/2     2            2           14
 ```
 
 ## Used technology:
@@ -286,31 +270,3 @@ cat <<EOT >> /etc/hosts
 172.18.0.11  mk8s-worker2
 EOT
 ```
-
-### Trouble shooting
-
-Windows powershell: stop ruby and vagrant processes:
-```
-Stop-process -Name ruby 
-Stop-Process -Name vagrant
-```
-
-Windows powershell: Search ruby and vagrant process:
-```
-Get-Process -Name ruby
-Get-Process -Name vagrant
-```
-
-## Kubernetes applications
-
-### Nginx ingress controller as default
-
-### Service Mesh Istio
-
-### Portworx as dynamic storage volume provisioner
-
-More details about manage processes using powershell you can find under blow link:
-
-https://docs.microsoft.com/en-us/powershell/module/microsoft.powershell.management/get-process?view=powershell-7.1
-
-Thank you!
