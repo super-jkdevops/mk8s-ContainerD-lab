@@ -10,9 +10,7 @@ on:
       - src
       - ansible.cfg
       - Vagrantfile
-
-env:
-
+      
 jobs:
    start:
      runs-on: [ self-hosted ]
