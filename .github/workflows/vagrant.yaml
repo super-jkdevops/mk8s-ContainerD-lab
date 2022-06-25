@@ -23,7 +23,7 @@ jobs:
      - name: Run VMS
        shell: cmd
        run: |
-           vagrant up -d 
+           vagrant up
      
      - name: List VMS
        run: |
