@@ -16,9 +16,9 @@ system("
 ")
 
 lab = {
-  "mk8s-master"  => { :osimage => IMAGE_NAME_K8S,  :ip => "172.18.0.2",  :cpus => 2,  :mem =>1500,  :custom_host => "mk8s-master.sh"  },
-  "mk8s-worker1" => { :osimage => IMAGE_NAME_K8S,  :ip => "172.18.0.10", :cpus => 2,  :mem =>2500,  :custom_host => "mk8s-worker1.sh" },
-  "mk8s-worker2" => { :osimage => IMAGE_NAME_K8S,  :ip => "172.18.0.11", :cpus => 2,  :mem =>2500,  :custom_host => "mk8s-worker2.sh" }
+  "mk8s-master"  => { :osimage => IMAGE_NAME_K8S,  :ip => "192.168.56.2",  :cpus => 2,  :mem =>3000,  :custom_host => "mk8s-master.sh"  },
+  "mk8s-worker1" => { :osimage => IMAGE_NAME_K8S,  :ip => "192.168.56.10", :cpus => 2,  :mem =>3000,  :custom_host => "mk8s-worker1.sh" },
+  "mk8s-worker2" => { :osimage => IMAGE_NAME_K8S,  :ip => "192.168.56.11", :cpus => 2,  :mem =>3000,  :custom_host => "mk8s-worker2.sh" }
   }
 
 Vagrant.configure("2") do |config|
@@ -57,7 +57,7 @@ Vagrant.configure("2") do |config|
         ansible.galaxy_roles_path = "#{ROLES_DIR}"
       end # end hosts file preparation
 
-      if (hostname == 'mk8s-master') or (hostname == 'mk8s-worker1') or (hostname == 'mk8s-worker2') then
+      if (hostname == 'mk8s-master') or (hostname == 'mk8s-worker1') or (hostname == 'mk8s-worker2') or (hostname == 'mk8s-worker3') then
         # Prerequisite ansible playbooks for kubernetes
         cfg.vm.provision "ansible_local" do |ansible|
             ansible.verbose = "v"

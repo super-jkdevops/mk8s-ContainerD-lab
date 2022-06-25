@@ -3,9 +3,10 @@
     path: /etc/hosts
     marker: "# LAB HOSTS"
     block: |
-      172.18.0.2  mk8s-master
-      172.18.0.10 mk8s-worker1
-      172.18.0.11 mk8s-worker2
+      192.168.56.2  mk8s-master
+      192.168.56.10 mk8s-worker1
+      192.168.56.11 mk8s-worker2
+      192.168.56.12 mk8s-worker2
       
 - name: 'Delete unnecessary entries from /etc/hosts file'
   lineinfile:
