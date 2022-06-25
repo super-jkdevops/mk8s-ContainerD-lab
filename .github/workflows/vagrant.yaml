@@ -1,0 +1,46 @@
+name: VagrantUP
+
+on:
+  push:
+    branches:
+      - dev
+    paths:
+      - .github/workflows/vagrant
+      - ansible
+      - src
+      - ansible.cfg
+      - Vagrantfile
+
+env:
+
+jobs:
+   start:
+     runs-on: [ self-hosted ]
+     steps:
+
+     - name: Checkout repository
+       id: 'checkout'
+       uses: actions/checkout@v3
+
+     - name: Run VMS
+       run: |
+           vagrant up -d 
+     
+     - name: List VMS
+       run: |
+          vagrant status
+
+   destroy:
+     runs-on: [ self-hosted ]
+     needs: [ start ]
+     steps:
+
+     - name: Checkout repository
+       id: 'checkout'
+       uses: actions/checkout@v3
+       with:
+         ref: 'dev'
+     
+     - name: cleanup vms
+       run: | 
+           vagrant destroy -f

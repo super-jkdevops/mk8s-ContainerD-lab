@@ -3,6 +3,7 @@
   become: true
   gather_facts: yes
   tasks:
+    - include_vars: ./vars/main.yaml
     - name: 'Kubernetes control plane'
       import_role:
         name: k8s-bootstrap-master

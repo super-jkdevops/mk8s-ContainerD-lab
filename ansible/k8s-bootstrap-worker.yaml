@@ -3,6 +3,7 @@
   become: true
   gather_facts: no
   tasks:
+    - include_vars: ./vars/main.yaml
     - name: 'Kubernetes compute node'
       import_role:
         name: k8s-bootstrap-worker
