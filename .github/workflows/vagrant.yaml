@@ -5,7 +5,7 @@ on:
     branches:
       - dev
     paths:
-      - .github/workflows/vagrant
+      - .github/workflows/vagrant.yaml
       - ansible
       - src
       - ansible.cfg
