@@ -12,5 +12,15 @@
       192.168.56.2  mk8s-master
       192.168.56.10 mk8s-worker1
       192.168.56.11 mk8s-worker2
+<<<<<<< HEAD
       192.168.56.12 mk8s-worker3
+=======
+      192.168.56.12 mk8s-worker2
+      
+- name: 'Delete unnecessary entries from /etc/hosts file'
+  lineinfile:
+    path: /etc/hosts
+    state: absent
+    regexp: '^127.0.1.1 mk8s'
+>>>>>>> ab5949901194e8aa88814c3f49ccd8efbf414ad1
 

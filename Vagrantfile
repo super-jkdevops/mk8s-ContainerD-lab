@@ -7,15 +7,6 @@ PLAYBOOK_DIR = "/vagrant/ansible"
 ROLES_DIR = "/vagrant/ansible/roles"
 ANSIBLE_INVENTORY = "#{PLAYBOOK_DIR}" + '/inventory/hosts'
 
-# Generate ssh keys for K8S further usage
-#system("
-#    if [ #{ARGV[0]} = 'up' ]; then
-#        echo '!!! You are trying to spin up k8s Lab system starting generate ssh key for further use !!!'
-#        bash
-#        src/scripts/local/make-ssh-key.sh
-#    fi
-#")
-
 lab = {
   "mk8s-master"  => { :osimage => IMAGE_NAME_K8S,  :ip => "192.168.56.2",  :cpus => 2,  :mem =>3000,  :custom_host => "mk8s-master.sh"  },
   "mk8s-worker1" => { :osimage => IMAGE_NAME_K8S,  :ip => "192.168.56.10", :cpus => 2,  :mem =>3000,  :custom_host => "mk8s-worker1.sh" },
