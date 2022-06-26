@@ -1,0 +1,6 @@
+---
+- name: 'Pull ssk key from master to ansible machine'
+  fetch:
+    src: /tmp/id_ssh_rsa
+    dest: /tmp/
+    flat: yes
