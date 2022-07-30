@@ -2,7 +2,7 @@
 # vi: set ft=ruby :
 
 # Variables
-IMAGE_NAME_K8S  = "bento/ubuntu-18.04"
+IMAGE_NAME_K8S  = "bento/ubuntu-20.04"
 PLAYBOOK_DIR = "/vagrant/ansible"
 ROLES_DIR = "/vagrant/ansible/roles"
 ANSIBLE_INVENTORY = "#{PLAYBOOK_DIR}" + '/inventory/hosts'
@@ -16,7 +16,6 @@ lab = {
 Vagrant.configure("2") do |config|
   lab.each_with_index do |(hostname, info), index|
     config.vm.define hostname do |cfg|
-
       # Synchronization apps/ dir into destination /vagrant dir (needed for deploy application into K8s cluster)
       config.vm.synced_folder '.', '/vagrant',
       type: 'rsync',
@@ -49,6 +48,22 @@ Vagrant.configure("2") do |config|
       #  ansible.galaxy_roles_path = "#{ROLES_DIR}"
       #end # end ssh key propagation
 
+       # vagrant up: generate ssh key that start together before first provisioning
+       if (hostname == 'mk8s-master') then
+         config.trigger.before [:up] do |trigger|
+           trigger.info = "Generating ssh key for lab usage!"
+           trigger.run = {path: "./src/scripts/local/make-ssh-key.sh"}
+         end
+       end
+
+       # vagrant destroy: cleanup tmp directory contains ssh key 
+       if (hostname == 'mk8s-master') then
+        config.trigger.before [:destroy] do |trigger|
+          trigger.info = "Get rid of ssh keys!"
+          trigger.run = {inline: "rm -rf ansible/ssh-keys"}
+        end
+      end
+
        # Initialize first control plane and give possibility to upload keys
        if (hostname == 'mk8s-master') then
         # k8s ssh key master generation
@@ -58,9 +73,10 @@ Vagrant.configure("2") do |config|
           ansible.galaxy_roles_path = "#{ROLES_DIR}"
         end # end ssh key master generation
       end
-      
-      if (hostname == 'mk8s-master') then
 
+      
+      #if (hostname == 'mk8s-master') then
+      if ( !hostname == 'mk8s-master') then
         # Pull ssh key from master 
         cfg.vm.provision "ansible_local" do |ansible|
           ansible.verbose = "v"
@@ -79,7 +95,7 @@ Vagrant.configure("2") do |config|
         ansible.galaxy_roles_path = "#{ROLES_DIR}"
       end # end ssh key propagation
 
-      # if (hostname == 'mk8s-master') or (hostname == 'mk8s-worker1') or (hostname == 'mk8s-worker2') or (hostname == 'mk8s-worker3') then
+      # if (hostname == 'mk8s-master') or (hostname == 'mk8s-worker1') or (hostname == 'mk8s-worker2') then
       #   # Prerequisite ansible playbooks for kubernetes
       #   cfg.vm.provision "ansible_local" do |ansible|
       #       ansible.verbose = "v"
